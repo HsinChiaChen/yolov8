@@ -1,0 +1,12 @@
+names:
+- tree_gazebo
+nc: 1
+roboflow:
+  license: CC BY 4.0
+  project: tree_gazebo
+  url: https://universe.roboflow.com/cheng-kung-uni/tree_gazebo/dataset/1
+  version: 1
+  workspace: cheng-kung-uni
+test: test/images
+train: train/images
+val: valid/images

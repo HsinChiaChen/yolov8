@@ -1,0 +1,12 @@
+names:
+- tree
+nc: 1
+roboflow:
+  license: Private
+  project: gazebo_tree
+  url: https://app.roboflow.com/agriculture-33ywi/gazebo_tree/1
+  version: 1
+  workspace: agriculture-33ywi
+test: ../test/images
+train: gazebo_tree-1/train/images
+val: gazebo_tree-1/valid/images
