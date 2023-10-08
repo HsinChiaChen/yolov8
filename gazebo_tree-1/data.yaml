@@ -7,6 +7,6 @@ roboflow:
   url: https://app.roboflow.com/agriculture-33ywi/gazebo_tree/1
   version: 1
   workspace: agriculture-33ywi
-test: ../test/images
-train: gazebo_tree-1/train/images
-val: gazebo_tree-1/valid/images
+test: /home/hcchen/yolo/yolov8/gazebo_tree-1/test/images
+train: /home/hcchen/yolo/yolov8/gazebo_tree-1/train/images
+val: /home/hcchen/yolo/yolov8/gazebo_tree-1/valid/images

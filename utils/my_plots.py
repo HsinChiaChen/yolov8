@@ -26,54 +26,54 @@ from scipy.optimize import leastsq
 matplotlib.rc('font', **{'size': 11})
 matplotlib.use('Agg')  # for writing to files only
 
-def max_filtering(N, I_temp):
-    wall = np.full((I_temp.shape[0]+(N//2)*2, I_temp.shape[1]+(N//2)*2), -1)
-    wall[(N//2):wall.shape[0]-(N//2), (N//2):wall.shape[1]-(N//2)] = I_temp.copy()
-    temp = np.full((I_temp.shape[0]+(N//2)*2, I_temp.shape[1]+(N//2)*2), -1)
-    for y in range(0,wall.shape[0]):
-        for x in range(0,wall.shape[1]):
-            if wall[y,x]!=-1:
-                window = wall[y-(N//2):y+(N//2)+1,x-(N//2):x+(N//2)+1]
-                num = np.amax(window)
-                temp[y,x] = num
-    A = temp[(N//2):wall.shape[0]-(N//2), (N//2):wall.shape[1]-(N//2)].copy()
-    return A
+# def max_filtering(N, I_temp):
+#     wall = np.full((I_temp.shape[0]+(N//2)*2, I_temp.shape[1]+(N//2)*2), -1)
+#     wall[(N//2):wall.shape[0]-(N//2), (N//2):wall.shape[1]-(N//2)] = I_temp.copy()
+#     temp = np.full((I_temp.shape[0]+(N//2)*2, I_temp.shape[1]+(N//2)*2), -1)
+#     for y in range(0,wall.shape[0]):
+#         for x in range(0,wall.shape[1]):
+#             if wall[y,x]!=-1:
+#                 window = wall[y-(N//2):y+(N//2)+1,x-(N//2):x+(N//2)+1]
+#                 num = np.amax(window)
+#                 temp[y,x] = num
+#     A = temp[(N//2):wall.shape[0]-(N//2), (N//2):wall.shape[1]-(N//2)].copy()
+#     return A
 
-def min_filtering(N, A):
-    wall_min = np.full((A.shape[0]+(N//2)*2, A.shape[1]+(N//2)*2), 300)
-    wall_min[(N//2):wall_min.shape[0]-(N//2), (N//2):wall_min.shape[1]-(N//2)] = A.copy()
-    temp_min = np.full((A.shape[0]+(N//2)*2, A.shape[1]+(N//2)*2), 300)
-    for y in range(0,wall_min.shape[0]):
-        for x in range(0,wall_min.shape[1]):
-            if wall_min[y,x]!=300:
-                window_min = wall_min[y-(N//2):y+(N//2)+1,x-(N//2):x+(N//2)+1]
-                num_min = np.amin(window_min)
-                temp_min[y,x] = num_min
-    B = temp_min[(N//2):wall_min.shape[0]-(N//2), (N//2):wall_min.shape[1]-(N//2)].copy()
-    return B
-#B is the filtered image and I is the original image
+# def min_filtering(N, A):
+#     wall_min = np.full((A.shape[0]+(N//2)*2, A.shape[1]+(N//2)*2), 300)
+#     wall_min[(N//2):wall_min.shape[0]-(N//2), (N//2):wall_min.shape[1]-(N//2)] = A.copy()
+#     temp_min = np.full((A.shape[0]+(N//2)*2, A.shape[1]+(N//2)*2), 300)
+#     for y in range(0,wall_min.shape[0]):
+#         for x in range(0,wall_min.shape[1]):
+#             if wall_min[y,x]!=300:
+#                 window_min = wall_min[y-(N//2):y+(N//2)+1,x-(N//2):x+(N//2)+1]
+#                 num_min = np.amin(window_min)
+#                 temp_min[y,x] = num_min
+#     B = temp_min[(N//2):wall_min.shape[0]-(N//2), (N//2):wall_min.shape[1]-(N//2)].copy()
+#     return B
+# #B is the filtered image and I is the original image
 
-def background_subtraction(I, B):
-    O = I - B
-    norm_img = cv2.normalize(O, None, 0,255, norm_type=cv2.NORM_MINMAX)
-    return norm_img
+# def background_subtraction(I, B):
+#     O = I - B
+#     norm_img = cv2.normalize(O, None, 0,255, norm_type=cv2.NORM_MINMAX)
+#     return norm_img
 
-def min_max_filtering(M, N, I):
-    if M == 0:
-        #max_filtering
-        A = max_filtering(N, I)
-        #min_filtering
-        B = min_filtering(N, A)
-        #subtraction
-        normalised_img = background_subtraction(I, B)
-    elif M == 1:
-        #min_filtering
-        A = min_filtering(N, I)
-        #max_filtering
-        B = max_filtering(N, A)
-        #subtraction
-        normalised_img = background_subtraction(I, B)
-    return normalised_img
+# def min_max_filtering(M, N, I):
+#     if M == 0:
+#         #max_filtering
+#         A = max_filtering(N, I)
+#         #min_filtering
+#         B = min_filtering(N, A)
+#         #subtraction
+#         normalised_img = background_subtraction(I, B)
+#     elif M == 1:
+#         #min_filtering
+#         A = min_filtering(N, I)
+#         #max_filtering
+#         B = max_filtering(N, A)
+#         #subtraction
+#         normalised_img = background_subtraction(I, B)
+#     return normalised_img
 
 def color_list():
     # Return first 10 plt colors as (r,g,b) https://stackoverflow.com/questions/51350872/python-from-color-name-to-rgb
@@ -245,6 +245,15 @@ def draw_line(img, right_line, left_line):
 
     return (int(x_mid), int(y_mid))
 
+def Detect_edge(im0):
+    gray = cv2.cvtColor(im0, cv2.COLOR_BGR2GRAY)   # 轉成灰階
+    gray = cv2.medianBlur(gray, 7)                 # 模糊化，去除雜訊
+    gray_edge = cv2.Canny(gray, 50, 50)            # 偵測邊緣cv2.Canny(img, threshold1, threshold2, apertureSize)
+    kernel = np.ones((3,3), np.uint8)
+    gray_edge = cv2.dilate(gray_edge, kernel, iterations = 3)
+    gray_edge = cv2.erode(gray_edge, kernel, iterations = 1)
+    color_edge = cv2.cvtColor(gray_edge, cv2.COLOR_GRAY2RGB)
+    return color_edge
 
 def plot_one_box_PIL(box, img, color=None, label=None, line_thickness=None):
     img = Image.fromarray(img)

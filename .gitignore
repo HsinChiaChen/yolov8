@@ -13,6 +13,10 @@ yolov8x.pt
 # /db/*.sqlite3
 
 # 忽略所有附檔名是 .tmp 的檔案
-# .pt
+.pt
 
+# 忽略
 /inference
+/runs
+/gazebo_tree-1
+/indoor-1
