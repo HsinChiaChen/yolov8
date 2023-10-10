@@ -212,4 +212,37 @@
 # cv2.destroyAllWindows()
 
 
+############################################################################################################
+#################################################
 
+#########    使用yolov8n.pt追蹤farm1.mp4 false
+
+#################################################
+#!/usr/bin/env python3
+import rospy
+from std_msgs.msg import String
+from geometry_msgs.msg import Point
+
+def callback(data):
+    x_goal = data.x
+    y_goal = data.y
+    goal_point = (x_goal, y_goal)
+    print(goal_point)
+
+def listener():
+
+    # In ROS, nodes are uniquely named. If two nodes with the same
+    # name are launched, the previous one is kicked off. The
+    # anonymous=True flag means that rospy will choose a unique
+    # name for our 'listener' node so that multiple listeners can
+    # run simultaneously.
+    rospy.init_node('listener')
+
+    rospy.Subscriber("goal_point", Point, callback)
+    
+    # spin() simply keeps python from exiting until this node is stopped
+    rospy.spin()
+
+if __name__ == '__main__':
+    listener()
+    

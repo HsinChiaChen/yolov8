@@ -211,7 +211,7 @@ def draw_line(img, right_line, left_line):
         # k_right,b_right = np.array([100.0, -2048])
         x_r =  np.array([680, 680])
         x_rmid = 680
-        print(x_right_values)
+        # print(x_right_values)
 
     else:
         ret_right = leastsq(err, p0, args = (x_right_values, y_right_values))

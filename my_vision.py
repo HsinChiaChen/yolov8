@@ -15,12 +15,12 @@ import math
 class RobotSensor_vision():
 
     def __init__(self):
-        self.d435_subscriber = rospy.Subscriber(
+        self.sub_color = rospy.Subscriber(
             '/camera/color/image_raw', Image, self.color_image_callback)
-        self.d435_subscriber = rospy.Subscriber(
+        self.sub_depth = rospy.Subscriber(
             '/camera/depth/image_raw', Image, self.depth_image_callback)
         self.color_image_msg =  Image()
-        self.depth_image_msg =  PointCloud2()
+        self.depth_image_msg =  Image()
 
         
     def color_image_callback(self, msg):
