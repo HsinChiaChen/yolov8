@@ -226,7 +226,8 @@ from geometry_msgs.msg import Point
 def callback(data):
     x_goal = data.x
     y_goal = data.y
-    goal_point = (x_goal, y_goal)
+    z_goal = data.z
+    goal_point = (x_goal, y_goal, z_goal)
     print(goal_point)
 
 def listener():

@@ -1,6 +1,7 @@
 from ultralytics import YOLO
 import rospy
 import time
+import math
 import cv2
 import argparse
 import numpy as np
@@ -12,23 +13,34 @@ from pathlib import Path
 from my_vision import RobotSensor_vision
 from utils.my_plots import plot_one_box, mask, point_store, draw_line, Detect_edge
 from geometry_msgs.msg import Point
+import pyrealsense2 as rs
+
 
 from cv_bridge import CvBridge
 Vision = RobotSensor_vision()
 bridge = CvBridge()
-
-def Dis_goal(depth_frame):
+    
+def Dis_goal(depth_frame,width, height, goal_coordinates_array):
     # Get global max depth value
     max_depth = np.amax(depth_frame)
-    print("Max value: {}".format(max_depth))
+    # print("Max value: {}".format(max_depth))
 
     # Get global min depth value
     min_depth = np.amin(depth_frame)
-    print("Min value: {}".format(min_depth))
+    # print("Min value: {}".format(min_depth))
 
     # Get depth value at a point
-    distance_value = depth_frame[100, 100]
-    print("Distance value: {}m".format(distance_value))
+    (x_goal, y_goal) = (int(goal_coordinates_array[0][0]), int(goal_coordinates_array[0][1]))
+    if depth_frame is not None:
+        pixel_distance = depth_frame[int(y_goal*1.5), int(x_goal*2)]*0.001
+        # pixel_distance = depth_frame[int(720/2), int(1280/2)]
+        # dis = math.sqrt(pixel_distance*pixel_distance - (0.5*0.5))
+        print("Distance value: {}m".format(pixel_distance))
+        # print((width, height))
+        return pixel_distance
+
+    else:
+        return None
 
 
 if __name__ == '__main__':
@@ -68,20 +80,23 @@ if __name__ == '__main__':
         depth_img = Vision.get_depth_image()
         depth_img = bridge.imgmsg_to_cv2(depth_img, "passthrough")
         depth_frame = depth_img
-        cv2.imshow('depth_frame', depth_frame)
+        # depth_frame = np.asanyarray(depth_frame)
+        # cv2.imshow('depth_frame', depth_frame)
 
         color_img = Vision.get_color_image()
         color_img = bridge.imgmsg_to_cv2(color_img, "passthrough")
         color_frame = color_img
-
         color_frame = np.asanyarray(color_frame)
 
         im0 = color_frame.copy()
         width, height = im0.shape[1], im0.shape[0]
         # cv2.imshow("color_img", img)
 
+        
+
         results = model.track(color_frame, persist=True)[0]
         frame_ = results.plot()
+        goal_coordinates_array = []
 
         color_edge = Detect_edge(im0)
         img_mask = np.zeros((height, width), dtype=im0.dtype)
@@ -92,7 +107,7 @@ if __name__ == '__main__':
             right_line.append((width, height))
             left_line.append((0, height))
 
-        print("--------------- New ---------------")
+        # print("--------------- New ---------------")
         for box in results.boxes:
             if len(box):
                 cls = box.cls[0].item()
@@ -122,9 +137,11 @@ if __name__ == '__main__':
                 cv2.circle(frame_, (int(x_mid), int(y_mid)), point_size, point_color_r, thickness)
         
         (x_goal, y_goal) = draw_line(frame_, right_line, left_line)
+        goal_coordinates_array.append([x_goal, y_goal])
+        
 
 
-        Dis_goal(depth_frame)
+        dist = Dis_goal(depth_frame,width, height, goal_coordinates_array)
         # dis_goal = depth_frame[x_goal, y_goal]
         # print((x_goal, y_goal,dis_goal))
 
@@ -133,7 +150,7 @@ if __name__ == '__main__':
         cv2.imshow('frame', frame_)
         cv2.imshow("color_edge result", color_edge)
 
-        goal_point = Point(x_goal, y_goal, 0)
+        goal_point = Point(x_goal, y_goal, dist)
         # rospy.loginfo(goal_point)
         # 將 hello_str 的內容印到螢幕並寫入 ROS log 裡
         pub.publish(goal_point)
