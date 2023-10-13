@@ -41,6 +41,32 @@ def Dis_goal(depth_frame,width, height, goal_coordinates_array):
 
     else:
         return None
+    
+def measure_distance(color_image, depth_image, goal_img_array):
+    width, height = color_image.shape[1], color_image.shape[0]
+    goal_coordinates_array = []
+    
+    if depth_frame is not None:
+        goal_img_array_len = len(goal_img_array)
+        (x_goal, y_goal) = (goal_img_array[0], goal_img_array[1])
+        offset_y = x_goal - width / 2
+        offset_z = y_goal - height / 2
+        # print((x_goal, y_goal))
+        # print('offset_y = ', offset_y)
+        # print('offset_z = ', offset_z)
+        # cv2.circle(color_image, (int(width / 2), int(height / 2)), 10, (0,0,255), 4)
+        # print(offset_y*2 + depth_image.shape[1] /2)
+        # print(offset_z *1.5 + depth_image.shape[0]/ 2)
+        dist =  depth_frame[int(offset_z *1.5 + depth_image.shape[0]/ 2), int(offset_y*2 + depth_image.shape[1] /2)]
+        offset_x = dist * 0.001
+        # goal_coordinates_array.append([offset_y, offset_z, offset_x])
+        print("Distance value: {}m".format(offset_x))
+        # goal_coordinates_array.append([offset_x, offset_y, offset_z])
+        goal_coordinates_array = (offset_x, offset_y, offset_z)
+        return offset_x
+
+    else:
+        return None
 
 
 if __name__ == '__main__':
@@ -81,12 +107,14 @@ if __name__ == '__main__':
         depth_img = bridge.imgmsg_to_cv2(depth_img, "passthrough")
         depth_frame = depth_img
         # depth_frame = np.asanyarray(depth_frame)
+        # print(depth_frame.shape)
         # cv2.imshow('depth_frame', depth_frame)
 
         color_img = Vision.get_color_image()
         color_img = bridge.imgmsg_to_cv2(color_img, "passthrough")
         color_frame = color_img
         color_frame = np.asanyarray(color_frame)
+        # print(color_frame.shape)
 
         im0 = color_frame.copy()
         width, height = im0.shape[1], im0.shape[0]
@@ -96,7 +124,7 @@ if __name__ == '__main__':
 
         results = model.track(color_frame, persist=True)[0]
         frame_ = results.plot()
-        goal_coordinates_array = []
+        goal_img_array = []
 
         color_edge = Detect_edge(im0)
         img_mask = np.zeros((height, width), dtype=im0.dtype)
@@ -137,23 +165,22 @@ if __name__ == '__main__':
                 cv2.circle(frame_, (int(x_mid), int(y_mid)), point_size, point_color_r, thickness)
         
         (x_goal, y_goal) = draw_line(frame_, right_line, left_line)
-        goal_coordinates_array.append([x_goal, y_goal])
-        
+        # goal_img_array.append([x_goal, y_goal])
 
-
-        dist = Dis_goal(depth_frame,width, height, goal_coordinates_array)
+        # dist = Dis_goal(depth_frame,width, height, goal_coordinates_array)
+        goal_dist = measure_distance(color_frame, depth_frame, (x_goal, y_goal))
         # dis_goal = depth_frame[x_goal, y_goal]
-        # print((x_goal, y_goal,dis_goal))
+        # print(goal_coordinates_array)
 
         color_edge = cv2.add(color_edge, np.zeros(np.shape(im0), dtype=np.uint8), mask=img_mask)
 
         cv2.imshow('frame', frame_)
-        cv2.imshow("color_edge result", color_edge)
+        # cv2.imshow("color_edge result", color_edge)
 
-        goal_point = Point(x_goal, y_goal, dist)
-        # rospy.loginfo(goal_point)
-        # 將 hello_str 的內容印到螢幕並寫入 ROS log 裡
+        goal_point = Point(x_goal, y_goal, goal_dist)
+        # # rospy.loginfo(goal_point)
+        # # 將 hello_str 的內容印到螢幕並寫入 ROS log 裡
         pub.publish(goal_point)
-        # 將 hello_str 這個 Message 發佈至 Topic 上
+        # # 將 hello_str 這個 Message 發佈至 Topic 上
         rate.sleep()
 
